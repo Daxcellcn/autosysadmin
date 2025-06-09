@@ -1,0 +1,43 @@
+# frontend/deployments/kubernetes/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autosysadmin-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: autosysadmin-frontend
+  template:
+    metadata:
+      labels:
+        app: autosysadmin-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: autosysadmin/frontend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: VITE_API_URL
+          value: "http://autosysadmin-api/api/v1"
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autosysadmin-frontend
+spec:
+  selector:
+    app: autosysadmin-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

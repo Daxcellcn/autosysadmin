@@ -1,0 +1,59 @@
+# frontend/deployments/kubernetes/api-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autosysadmin-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: autosysadmin-api
+  template:
+    metadata:
+      labels:
+        app: autosysadmin-api
+    spec:
+      containers:
+      - name: api
+        image: autosysadmin/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: "autosysadmin-postgres"
+        - name: DB_USER
+          value: "autosysadmin"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: password
+        - name: DB_NAME
+          value: "autosysadmin"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        - name: REDIS_HOST
+          value: "autosysadmin-redis"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: autosysadmin-api
+spec:
+  selector:
+    app: autosysadmin-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

@@ -1,0 +1,49 @@
+# frontend/deployments/docker/docker-compose.yml
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ../..
+      dockerfile: deployments/docker/Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://backend:8080/api/v1
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: deployments/docker/Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=autosysadmin
+      - DB_PASSWORD=secret
+      - DB_NAME=autosysadmin
+      - JWT_SECRET=supersecret
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=autosysadmin
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=autosysadmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
